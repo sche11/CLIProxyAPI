@@ -9,7 +9,7 @@ set OUTPUT_DIR=%SCRIPT_DIR%bin
 if "%VERSION%"=="" set VERSION=dev
 
 echo.
-echo [INFO] Packing Magisk modules...
+echo [INFO] Packing Magisk module...
 echo [INFO] Version: %VERSION%
 echo.
 
@@ -19,20 +19,12 @@ if not exist "%OUTPUT_DIR%\cli-proxy-api-android-arm64" (
     exit /b 1
 )
 
-REM 打包 arm64 模块
+REM 打包 ARM64 模块
 call :pack_module arm64
 if %ERRORLEVEL% neq 0 exit /b 1
 
-REM 打包 arm 模块
-call :pack_module arm
-if %ERRORLEVEL% neq 0 exit /b 1
-
-REM 打包 amd64 模块
-call :pack_module amd64
-if %ERRORLEVEL% neq 0 exit /b 1
-
 echo.
-echo [INFO] All Magisk modules packed!
+echo [INFO] Magisk module packed!
 echo [INFO] Output directory: %OUTPUT_DIR%
 dir /b "%OUTPUT_DIR%\*.zip"
 

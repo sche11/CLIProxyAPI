@@ -6,31 +6,31 @@
 
 - ✅ 在 Android 上运行 CLIProxyAPI 代理服务
 - ✅ 开机自动启动服务
-- ✅ 支持 arm64/arm/amd64 架构
+- ✅ 支持 ARM64 架构
 - ✅ 完整的服务管理（启动/停止/重启/状态）
-- ✅ 配置文件持久化
+- ✅ 配置文件持久化（模块更新后自动恢复用户配置）
+- ✅ PID 文件管理（防止误杀其他进程）
 - ✅ 日志记录
 
 ## 系统要求
 
 - Android 8.0+
 - 已安装 Magisk v24+
-- arm64 / arm / amd64 架构
+- ARM64 架构
 
 ## 安装方法
 
 ### 方法一：下载预编译模块
 
 1. 前往 [Releases](https://github.com/router-for-me/CLIProxyAPI/releases) 页面
-2. 下载适合您设备架构的模块：
-   - `cliproxyapi-arm64.zip` - 大多数现代手机
-   - `cliproxyapi-arm.zip` - 旧款 32 位手机
-   - `cliproxyapi-amd64.zip` - 模拟器/x86 设备
+2. 下载模块：`cliproxyapi-arm64-{version}.zip`
 3. 在 Magisk Manager 中选择「从本地安装」
 4. 选择下载的 zip 文件并安装
 5. 重启设备
 
 ### 方法二：自行编译
+
+**Linux/macOS：**
 
 ```bash
 # 克隆仓库
@@ -43,6 +43,37 @@ chmod +x build-android.sh
 ./build-android.sh all
 
 # 生成的模块位于 magisk/bin/ 目录
+```
+
+**Windows：**
+
+```cmd
+cd magisk
+build-android.cmd
+```
+
+或分别执行：
+
+```cmd
+build-android.cmd build
+build-android.cmd pack
+```
+
+## 目录结构
+
+```
+/data/adb/modules/cliproxyapi/
+├── cli-proxy-api      # 主程序二进制
+├── service.sh         # 服务管理脚本
+├── post-fs-data.sh    # 初始化脚本
+├── uninstall.sh       # 卸载脚本
+├── module.prop        # 模块元数据
+├── config.yaml        # 配置文件
+├── auths/            # OAuth 认证文件
+├── logs/             # 日志文件
+│   └── service.log   # 服务日志
+└── config_backup/    # 配置备份
+    └── config.yaml.bak
 ```
 
 ## 配置
@@ -76,11 +107,13 @@ claude-api-key:
     prefix: "claude"
 ```
 
-### 认证文件位置
+### 配置持久化
 
-```
-/data/adb/modules/cliproxyapi/auths/
-```
+模块更新时会自动备份和恢复配置：
+
+- **首次安装**：将 `config.yaml` 备份到 `config_backup/config.yaml.bak`
+- **模块更新**：如果 `config.yaml` 丢失，自动从备份恢复
+- **用户修改**：保留用户的配置修改，不会被覆盖
 
 ## 服务管理
 
@@ -99,6 +132,13 @@ claude-api-key:
 # 查看状态
 /data/adb/modules/cliproxyapi/service.sh status
 ```
+
+### 服务管理说明
+
+- **start**：等待系统启动完成后启动服务，如果服务已在运行则跳过
+- **stop**：安全停止服务，支持强制终止
+- **restart**：先停止再启动
+- **status**：查看服务运行状态和 PID
 
 ## 使用方法
 
@@ -169,9 +209,7 @@ curl "http://127.0.0.1:8317/v1beta/models/gemini-2.5-flash:generateContent" \
 
 ```
 /data/adb/modules/cliproxyapi/logs/
-├── service.log      # 服务日志
-├── access.log       # 访问日志
-└── error.log        # 错误日志
+└── service.log      # 服务日志
 ```
 
 查看日志：
@@ -229,13 +267,39 @@ setenforce 0
 rm -rf /data/adb/modules/cliproxyapi
 ```
 
-## 架构支持
+## 构建说明
 
-| 架构 | 设备类型 | 模块文件 |
-|------|----------|----------|
-| arm64 | 大多数现代手机 | cliproxyapi-arm64.zip |
-| arm | 旧款 32 位手机 | cliproxyapi-arm.zip |
-| amd64 | 模拟器/x86 设备 | cliproxyapi-amd64.zip |
+### 环境要求
+
+- Go 1.21+
+- Git
+- Android NDK (可选，用于交叉编译)
+
+### 版本号说明
+
+VERSION 环境变量格式支持语义版本：
+
+| VERSION 值 | versionCode |
+|------------|-------------|
+| `1.0.0`    | `10000000`  |
+| `1.2.3`    | `12300000`  |
+| `dev`      | `10000000`  |
+
+### 自定义构建
+
+```bash
+# 指定版本号
+VERSION=v1.2.3 ./build-android.sh all
+
+# 仅构建二进制
+./build-android.sh build
+
+# 仅打包模块
+./build-android.sh pack
+
+# 清理构建产物
+./build-android.sh clean
+```
 
 ## 相关链接
 

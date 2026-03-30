@@ -65,18 +65,16 @@ build_android() {
 }
 
 build_all_android() {
-    log_info "Building CLIProxyAPI for Android..."
+    log_info "Building CLIProxyAPI for Android ARM64..."
     log_info "Version: $VERSION"
     log_info "Commit: $COMMIT"
     log_info "Build Date: $BUILD_DATE"
     echo ""
 
     build_android "android" "arm64"
-    build_android "android" "arm"
-    build_android "android" "amd64"
 
     echo ""
-    log_info "All Android builds completed!"
+    log_info "Android ARM64 build completed!"
     log_info "Output directory: $OUTPUT_DIR"
     ls -la "$OUTPUT_DIR"
 }
@@ -128,13 +126,11 @@ build_magisk_module() {
 }
 
 pack_all_magisk() {
-    log_info "Packing Magisk modules..."
+    log_info "Packing Magisk module..."
 
     build_magisk_module "arm64"
-    build_magisk_module "arm"
-    build_magisk_module "amd64"
 
-    log_info "All Magisk modules packed!"
+    log_info "Magisk module packed!"
 }
 
 clean() {
@@ -149,9 +145,9 @@ show_help() {
     echo "Usage: $0 [command]"
     echo ""
     echo "Commands:"
-    echo "  build       Build for all Android architectures (arm64, arm, amd64)"
-    echo "  pack        Create Magisk module packages (requires build first)"
-    echo "  all         Build and pack everything"
+    echo "  build       Build Android ARM64 binary"
+    echo "  pack        Create Magisk module package (requires build first)"
+    echo "  all         Build and pack Magisk module"
     echo "  clean       Remove build artifacts"
     echo "  help        Show this help message"
     echo ""
@@ -161,8 +157,8 @@ show_help() {
     echo "  BUILD_DATE  Build date (default: current time)"
     echo ""
     echo "Examples:"
-    echo "  $0 build                    # Build Android binaries"
-    echo "  VERSION=v1.0.0 $0 all       # Build and pack with version"
+    echo "  $0 build                    # Build ARM64 binary"
+    echo "  VERSION=v1.0.0 $0 all      # Build and pack with version"
 }
 
 main() {
